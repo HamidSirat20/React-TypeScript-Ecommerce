@@ -4,7 +4,7 @@ import {
   filterByCategory,
   getAllProducts,
 } from "../redux/reducers/productsReducer";
-import { Dropdown } from "react-bootstrap";
+import { Button, Card, Dropdown, ListGroup, Spinner } from "react-bootstrap";
 import { getAllCategories } from "../redux/reducers/categoryReducer";
 
 const ProductPage = () => {
@@ -33,20 +33,33 @@ const ProductPage = () => {
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
-    console.log(`Selected Category: ${category}`);
   };
 
-  return (
-    <div className="container mt-4">
-      <h1 className="text-center mb-4 text-primary">Product List</h1>
-      {productStatus === "loading" && (
-        <p className="text-center text-warning">Loading products...</p>
-      )}
-      {categoryStatus === "loading" && (
-        <p className="text-center text-warning">Loading categories...</p>
-      )}
+  const isLoading = productStatus === "loading" || categoryStatus === "loading";
 
-      <div className="d-flex justify-content-center mb-4">
+  if (isLoading)
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{
+          height: "100vh",
+        }}>
+        <Button variant="primary" disabled>
+          <Spinner
+            as="span"
+            animation="grow"
+            size="sm"
+            role="status"
+            aria-hidden="true"
+          />
+          Loading...
+        </Button>
+      </div>
+    );
+
+  return (
+    <div className="mt-5 pt-2">
+      <div className="d-flex justify-content-center m-5">
         <Dropdown>
           <Dropdown.Toggle
             variant="primary"
@@ -54,7 +67,6 @@ const ProductPage = () => {
             style={{ width: "280px" }}>
             {selectedCategory || "Choose a category"}
           </Dropdown.Toggle>
-
           <Dropdown.Menu>
             <Dropdown.Item
               key="all"
@@ -72,40 +84,35 @@ const ProductPage = () => {
         </Dropdown>
       </div>
 
-      <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+      <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 justify-content-center">
         {products.map((product) => (
-          <div className="col" key={product.id}>
-            <div className="card h-100 shadow-sm">
-              <img
-                src={product.image}
-                alt={product.title}
-                className="card-img-top"
-                style={{
-                  objectFit: "cover",
-                  height: "200px",
-                }}
-              />
-              <div className="card-body">
-                <h5 className="card-title text-primary">{product.title}</h5>
-                <p className="card-text text-muted">
-                  {product.description.length > 50
-                    ? product.description.slice(0, 50) + "..."
-                    : product.description}
-                </p>
-                <p className="card-text">
-                  <strong>Category:</strong> {product.category}
-                </p>
-                <p className="card-text">
-                  <strong>Price:</strong> ${product.price}
-                </p>
-              </div>
-              <div className="card-footer">
-                <button className="btn btn-outline-primary btn-sm w-100">
-                  View Details
-                </button>
-              </div>
-            </div>
-          </div>
+          <Card
+            style={{ width: "18rem" }}
+            className="m-2 shadow"
+            key={product.id}>
+            <Card.Img
+              variant="top"
+              style={{ height: "200px", objectFit: "cover" }}
+              src={product.image}
+            />
+            <Card.Body>
+              <Card.Title>${product.price}</Card.Title>
+              <Card.Text>
+                {product.description.length > 50
+                  ? product.description.slice(0, 50) + "..."
+                  : product.description}
+              </Card.Text>
+            </Card.Body>
+            <ListGroup className="list-group-flush">
+              <ListGroup.Item>{product.category}</ListGroup.Item>
+            </ListGroup>
+            <Card.Body>
+              <Card.Link href="#">Add to Cart</Card.Link>
+              <Card.Link href={`/products/${product.id}`}>
+                View More...
+              </Card.Link>
+            </Card.Body>
+          </Card>
         ))}
       </div>
     </div>

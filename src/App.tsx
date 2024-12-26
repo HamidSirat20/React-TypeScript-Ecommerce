@@ -1,30 +1,17 @@
-import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "./hooks/useAppHooks";
 import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
 import ProductPage from "./components/ProductPage";
-import CategoriesPage from "./components/CategoriesPage";
+import NavBar from "./components/nav/NavBar";
+import ProductDetails from "./components/ProductDetails";
 
 function App() {
-  const dispatch = useAppDispatch();
-  const counter = useAppSelector((state) => state.counterReducer);
-
-  const [amount, setAmount] = useState(0);
-  const addValue = Number(amount) | 0;
-
-  const handleClick = () => {};
   return (
     <>
       <div>
         <Router>
+          <NavBar />
           <Routes>
-            <Route
-              path="/categories"
-              element={
-                <>
-                  <ProductPage />
-                </>
-              }
-            />
+            <Route path="/" element={<ProductPage />} />
+            <Route path="/products/:id" element={<ProductDetails />} />
           </Routes>
         </Router>
       </div>

@@ -9,6 +9,7 @@ interface ProductsState {
   status: "idle" | "loading" | "success" | "failed";
   error: string | null;
   isSuccess: boolean;
+  singleProduct: Product | null;
 }
 
 const initialState: ProductsState = {
@@ -17,6 +18,7 @@ const initialState: ProductsState = {
   status: "idle",
   error: null,
   isSuccess: false,
+  singleProduct: null,
 };
 
 export const getAllProducts = createAsyncThunk<
@@ -33,6 +35,20 @@ export const getAllProducts = createAsyncThunk<
     return rejectWithValue(err.message);
   }
 });
+
+export const getSingleProduct = createAsyncThunk<Product, { id: number }>(
+  "getSingleProduct",
+  async ({ id }) => {
+    try {
+      const response = axios.get(`${config.baseUrl}/products/${id}`);
+      const data = (await response).data;
+      return data;
+    } catch (error) {
+      const err = error as AxiosError;
+      return err.response;
+    }
+  }
+);
 
 const productsSlice = createSlice({
   name: "postSlice",
@@ -70,6 +86,28 @@ const productsSlice = createSlice({
           state.products = action.payload;
           state.isSuccess = true;
           state.allProducts = action.payload;
+        }
+      )
+
+      //get one product
+      .addCase(getSingleProduct.pending, (state, actions) => {
+        (state.isSuccess = false),
+          (state.error = "pending"),
+          (state.status = "loading"),
+          (state.singleProduct = null);
+      })
+      .addCase(getSingleProduct.rejected, (state, actions) => {
+        (state.isSuccess = false),
+          (state.error = "rejected"),
+          (state.status = "failed"),
+          (state.singleProduct = null);
+      })
+      .addCase(
+        getSingleProduct.fulfilled,
+        (state, action: PayloadAction<Product>) => {
+          state.status = "success";
+          state.singleProduct = action.payload;
+          state.isSuccess = true;
         }
       );
   },
