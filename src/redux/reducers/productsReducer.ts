@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Product } from "../../types/ProductType";
+import { CreateProductType, Product } from "../../types/ProductType";
 import axios, { AxiosError } from "axios";
 import { config } from "../../config";
 
@@ -23,11 +23,11 @@ const initialState: ProductsState = {
 
 export const getAllProducts = createAsyncThunk<
   Product[],
-  void,
+  string,
   { rejectValue: string }
->("products/getAllProducts", async (_, { rejectWithValue }) => {
+>("products/getAllProducts", async (sortBy, { rejectWithValue }) => {
   try {
-    const response = axios.get(`${config.baseUrl}/products`);
+    const response = axios.get(`${config.baseUrl}/products?sort=${sortBy}`);
     const data = (await response).data;
     return data;
   } catch (error) {
@@ -50,6 +50,21 @@ export const getSingleProduct = createAsyncThunk<Product, { id: number }>(
   }
 );
 
+export const createProduct = createAsyncThunk<Product, CreateProductType>(
+  "createProduct",
+  async (product, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${config.baseUrl}/products`, product);
+      const data = await response.data;
+      console.log("Product created successfully:", data);
+      return data;
+    } catch (error) {
+      const err = error as AxiosError;
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 const productsSlice = createSlice({
   name: "postSlice",
   initialState,
@@ -65,14 +80,14 @@ const productsSlice = createSlice({
   },
   extraReducers: (build) => {
     build
-      .addCase(getAllProducts.pending, (state, actions) => {
+      .addCase(getAllProducts.pending, (state) => {
         (state.products = []),
           (state.isSuccess = false),
           (state.error = "pending"),
           (state.status = "loading"),
           (state.allProducts = []);
       })
-      .addCase(getAllProducts.rejected, (state, actions) => {
+      .addCase(getAllProducts.rejected, (state) => {
         (state.products = []),
           (state.isSuccess = false),
           (state.error = "rejected"),
@@ -90,13 +105,13 @@ const productsSlice = createSlice({
       )
 
       //get one product
-      .addCase(getSingleProduct.pending, (state, actions) => {
+      .addCase(getSingleProduct.pending, (state) => {
         (state.isSuccess = false),
           (state.error = "pending"),
           (state.status = "loading"),
           (state.singleProduct = null);
       })
-      .addCase(getSingleProduct.rejected, (state, actions) => {
+      .addCase(getSingleProduct.rejected, (state) => {
         (state.isSuccess = false),
           (state.error = "rejected"),
           (state.status = "failed"),
@@ -109,7 +124,22 @@ const productsSlice = createSlice({
           state.singleProduct = action.payload;
           state.isSuccess = true;
         }
-      );
+      )
+      //create product
+      .addCase(createProduct.pending, (state) => {
+        state.status = "loading";
+        state.error = "idle";
+      })
+      .addCase(createProduct.rejected, (state) => {
+        state.status = "failed";
+        state.error = "rejected";
+      })
+      .addCase(createProduct.fulfilled, (state, actions) => {
+        state.products.push(actions.payload);
+        state.allProducts.push(actions.payload);
+        state.isSuccess = true;
+        state.status = "success";
+      });
   },
 });
 
