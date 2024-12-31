@@ -3,6 +3,7 @@ import ProductPage from "./components/ProductPage";
 import NavBar from "./components/nav/NavBar";
 import ProductDetails from "./components/ProductDetails";
 import CreateProduct from "./components/CreateProduct";
+import Footer from "./components/common/Footer";
 
 function App() {
   return (

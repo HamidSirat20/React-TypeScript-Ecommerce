@@ -23,11 +23,13 @@ const initialState: ProductsState = {
 
 export const getAllProducts = createAsyncThunk<
   Product[],
-  string,
+  { sortBy: string; limit: number },
   { rejectValue: string }
->("products/getAllProducts", async (sortBy, { rejectWithValue }) => {
+>("products/getAllProducts", async ({ sortBy, limit }, { rejectWithValue }) => {
   try {
-    const response = axios.get(`${config.baseUrl}/products?sort=${sortBy}`);
+    const response = axios.get(
+      `${config.baseUrl}/products?sort=${sortBy}&limit=${limit}`
+    );
     const data = (await response).data;
     return data;
   } catch (error) {

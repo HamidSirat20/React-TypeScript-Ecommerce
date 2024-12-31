@@ -6,10 +6,12 @@ import {
 } from "../redux/reducers/productsReducer";
 import { Card, ListGroup, Spinner, Form } from "react-bootstrap";
 import { getAllCategories } from "../redux/reducers/categoryReducer";
+import Footer from "./common/Footer";
 
 const ProductPage = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sort, setSort] = useState("asc");
+  const [limit, setLimit] = useState(8);
 
   const dispatch = useAppDispatch();
   const { products, status: productStatus } = useAppSelector(
@@ -19,17 +21,23 @@ const ProductPage = () => {
     (state) => state.categoryReducer
   );
 
+  const LoadMorePage = () => {
+    let increasedPage = limit + 8;
+    setLimit(increasedPage);
+  };
+  console.log(products.length);
+
   useEffect(() => {
     dispatch(getAllCategories());
   }, [dispatch]);
 
   useEffect(() => {
     if (selectedCategories.length === 0 || selectedCategories.includes("All")) {
-      dispatch(getAllProducts(sort));
+      dispatch(getAllProducts({ sortBy: sort, limit: limit }));
     } else {
       dispatch(filterByCategory(selectedCategories.join(",")));
     }
-  }, [selectedCategories, sort, dispatch]);
+  }, [selectedCategories, sort, dispatch, limit]);
 
   const handleCategoryToggle = (category: string) => {
     setSelectedCategories((prev) =>
@@ -126,8 +134,21 @@ const ProductPage = () => {
                 </Card.Body>
               </Card>
             ))}
+
+            <div className="d-grid gap-2 col-6 mx-auto">
+              <nav aria-label="Page navigation ">
+                <ul className="pagination">
+                  <li className="page-item">
+                    <button onClick={LoadMorePage} className="btn btn-primary">
+                      Load More ...
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
           </div>
         )}
+        <Footer />
       </div>
     </div>
   );
